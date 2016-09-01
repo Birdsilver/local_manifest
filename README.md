@@ -48,7 +48,7 @@ To initialize Manifest for L1II/L3II:
 
 Sync the repo:
 
-    repo sync
+    repo sync -c --force-sync
 
 ---
 

@@ -167,10 +167,16 @@ do
 	_if_fail_break "curl -# --create-dirs -L -o .repo/local_manifests/${_device}_manifest.xml -O -L https://raw.github.com/${_github_device_place}/local_manifest/${_custom_android}/${_device}_manifest.xml"
 	_if_fail_break "curl -# --create-dirs -L -o .repo/local_manifests/msm7x27a_manifest.xml -O -L https://raw.github.com/${_github_device_place}/local_manifest/${_custom_android}/msm7x27a_manifest.xml"
 
-	# Real 'repo sync'
+	# Use optimized reposync
 	echo "  |"
 	echo "  | Starting Sync:"
-	_if_fail_break "repo sync -q --force-sync"
+	if [ -f "build/envsetup.sh" ]
+	then
+		_if_fail_break "source build/envsetup.sh"
+		_if_fail_break "reposync -c --force-sync -q"
+	else
+		_if_fail_break "repo sync -c --force-sync -q"
+	fi
 
 	# Initialize environment
 	echo "  |"
