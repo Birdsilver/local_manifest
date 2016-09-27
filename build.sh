@@ -38,15 +38,38 @@ do
 		_unset_and_stop
 	fi
 
-	# Check if 'repo' is installed
-	if [ ! "$(which repo)" ]
+	# Check if 'curl' v1.18 is installed
+	if ! [ "$(wget --version | head -1 | cut -d' ' -f3)" == 1.18 ]
 	then
 		echo "  |"
-		echo "  | You will need to install 'repo'"
-		echo "  | Check in this link:"
-		echo "  | <https://source.android.com/source/downloading.html>"
-		echo "  | Exiting from script!"
-		_unset_and_stop
+		echo "  | Wget - Source Download, Build and Install"
+		echo "  | This will get some time, and errors may occur"
+		echo "  | If you get any error, select 'n'"
+		read -p "  | You really want to continue? (y/n)" -n 1 -t 10 -s wg
+		case ${wg} in
+			y | Y)
+			echo "  | Lets download latest 'curl'!"
+			_if_fail_break "curl -# --create-dirs -L -o wget.tar.gz -O -L http://ftp.gnu.org/gnu/wget/wget-1.18.tar.gz"
+
+			echo "  | Checking dependencies!"
+			if ! which tar > /dev/null
+			then
+				sudo apt-get install tar -y
+			fi
+			if ! which make > /dev/null
+			then
+				sudo apt-get install make -y
+			fi
+
+			echo "  | Lets build latest 'curl'!"
+			tar -xzf wget.tar.gz
+			rm -rf wget.tar.gz
+			cd wget
+			./configure; make || ./configure --with-ssl=openssl; make || ./configure --without-ssl; make
+			sudo make install
+			cd ..
+			rm -rf wget
+		esac
 	fi
 
 	# Check if 'curl' is installed
@@ -57,6 +80,33 @@ do
 		echo "  | Use 'sudo apt-get install curl' to install 'curl'"
 		echo "  | Exiting from script!"
 		_unset_and_stop
+	fi
+
+	# Check if 'repo' is installed
+	if [ ! "$(which repo)" ]
+	then
+		# Load this value
+		export PATH=~/bin:$PATH
+
+		# Check again for repo
+		if [ ! "$(which repo)" ]
+		then
+			echo "  |"
+			echo "  | Installing 'repo'"
+
+			# Download repo inside of bin dir
+			_if_fail_break "curl -# --create-dirs -L -o ~/bin/repo -O -L http://commondatastorage.googleapis.com/git-repo-downloads/repo"
+
+			# Make it executable
+			chmod a+x ~/bin/repo
+
+			# Let's check if repo is include
+			if [ $(cat $(ls .bash* | grep -v -e history -e logout) | grep "export PATH=~/bin:\$PATH" | wc -l) == "0" ]
+			then
+				# Add it to bashrc
+				echo "export PATH=~/bin:\$PATH" >> ~/.bashrc
+			fi
+		fi
 	fi
 
 	# Name of script
@@ -158,7 +208,7 @@ do
 	# Initialization of Android Tree
 	echo "  |"
 	echo "  | Downloading Android Tree Manifest from ${_github_custom_android_place} (${_custom_android})"
-	_if_fail_break "repo init -u git://github.com/${_github_custom_android_place}/android.git -b ${_custom_android} -g all,-notdefault,-darwin"
+	_if_fail_break "repo init -u https://github.com/${_github_custom_android_place}/android.git -b ${_custom_android} -g all,-notdefault,-darwin"
 
 	# Device manifest download
 	echo "  |"
