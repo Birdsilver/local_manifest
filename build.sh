@@ -34,15 +34,21 @@ do
 	}
 
 	_if_check_java_fail() {
-		_java=$(java -version 2>&1 | head -1)
-		if [ "$(echo ${_java} | grep -o 1.8)" == "1.8" ]
+		_java=$(java -version 2>&1 | head -1 | grep -o 1.8)
+		if [ "${_java}" == "1.8" ]
 		then
-			_javac=$(javac -version 2>&1 | head -1)
-			if [ ! "$(echo ${_javac} | grep -o 1.8)" == "1.8" ]
+			_javac=$(javac -version 2>&1 | head -1 | grep -o 1.8)
+			if [ ! "${_javac}" == "1.8" ]
 			then
+				echo "  |"
+				echo "  | OpenJDK 8 not is default Java!"
+				echo "  | Default Java is (${_javac})!"
 				${1}
 			fi
 		else
+			echo "  |"
+			echo "  | OpenJDK 8 not is default Java!"
+			echo "  | Default Java is (${_java})!"
 			${1}
 		fi
 	}
@@ -157,6 +163,7 @@ do
 	# <https://github.com/akhilnarang/scripts>
 	_if_check_java_fail _java_install
 
+	echo "  |"
 	echo "  | Downloading dependencies!"
 	sudo apt-get -y install git-core python gnupg flex bison gperf libsdl1.2-dev libesd0-dev libwxgtk2.8-dev \
 squashfs-tools build-essential zip curl libncurses5-dev zlib1g-dev openjdk-8-jre openjdk-8-jdk pngcrush \
