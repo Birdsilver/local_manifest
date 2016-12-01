@@ -25,6 +25,28 @@ do
 		fi
 	}
 
+	_java_install() {
+		echo "  |"
+		echo "  | Let's install dependencies!"
+		echo "  | Adding OpenJDK Repository!"
+		sudo apt-add-repository ppa:openjdk-r/ppa -y
+		sudo apt-get update
+	}
+
+	_if_check_java_fail() {
+		_java=$(java -version 2>&1 | head -1)
+		if [ "$(echo ${_java} | grep -o 1.8)" == "1.8" ]
+		then
+			_javac=$(javac -version 2>&1 | head -1)
+			if [ ! "$(echo ${_javac} | grep -o 1.8)" == "1.8" ]
+			then
+				${1}
+			fi
+		else
+			${1}
+		fi
+	}
+
 	# Unset devices variables for not have any problem
 	unset _device _device_build _device_echo
 
@@ -133,11 +155,7 @@ do
 	# <http://developer.sonymobile.com/open-devices/aosp-build-instructions/how-to-build-aosp-nougat-for-unlocked-xperia-devices/>
 	# <https://source.android.com/source/initializing.html>
 	# <https://github.com/akhilnarang/scripts>
-	echo "  |"
-	echo "  | Let's install dependencies!"
-	echo "  | Adding OpenJDK Repository!"
-	sudo apt-add-repository ppa:openjdk-r/ppa -y
-	sudo apt-get update
+	_if_check_java_fail _java_install
 
 	echo "  | Downloading dependencies!"
 	sudo apt-get -y install git-core python gnupg flex bison gperf libsdl1.2-dev libesd0-dev libwxgtk2.8-dev \
@@ -150,25 +168,7 @@ liblzma* w3m android-tools-adb maven ncftp figlet
 	sudo apt-get -f -y install
 
 	# Check Java
-	_java=$(java -version 2>&1 | head -1)
-	if [ "$(echo ${_java} | grep -o 1.8)" == "1.8" ]
-	then
-		_javac=$(javac -version 2>&1 | head -1)
-		if [ ! "$(echo ${_javac} | grep -o 1.8)" == "1.8" ]
-		then
-			echo "  |"
-			echo "  | OpenJDK 8 not is default Java!"
-			echo "  | Default Java is (${_javac})!"
-			echo "  | Exiting from script!"
-			_unset_and_stop
-		fi
-	else
-		echo "  |"
-		echo "  | OpenJDK 8 not is default Java!"
-		echo "  | Default Java is (${_java})!"
-		echo "  | Exiting from script!"
-		_unset_and_stop
-	fi
+	_if_check_java_fail _unset_and_stop
 
 	# Repo Sync
 	echo "  |"
