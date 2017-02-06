@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
 	<!-- Remote names -->
-	<remote name="cm" fetch="https://github.com/CyanogenMod/" />
+	<remote name="lineage" fetch="https://github.com/LineageOS/" />
 	<remote name="thlg" fetch="https://github.com/TeamHackLG/" />
 	<!-- Useless on Unofficial Builds -->
-	<remove-project name="CyanogenMod/android_packages_apps_CMUpdater" />
+	<remove-project name="LineageOS/android_packages_apps_CMUpdater" />
 	<!-- Prebuilt apps -->
-	<remove-project name="CyanogenMod/android_packages_apps_Eleven" /> <!-- Using BlackPlayer -->
-	<remove-project name="CyanogenMod/android_packages_apps_Camera2" /> <!-- Using OpenCamera -->
+	<remove-project name="LineageOS/android_packages_apps_Eleven" /> <!-- Using BlackPlayer -->
+	<remove-project name="LineageOS/android_packages_apps_Camera2" /> <!-- Using OpenCamera -->
 	<!-- Adreno STLPort -->
-	<project path="external/stlport" name="android_external_stlport" revision="cm-13.0" remote="cm" />
+	<project path="external/stlport" name="android_external_stlport" revision="cm-13.0" remote="lineage" />
 	<!-- MSM7x27a HAL -->
 	<project path="hardware/qcom/display-caf/msm7x27a" name="android_hardware_qcom_display-caf_msm7x27a" revision="cm-13.0" remote="thlg" />
 	<project path="hardware/qcom/media-caf/msm7x27a" name="android_hardware_qcom_media-caf_msm7x27a" revision="cm-13.0" remote="thlg" />
