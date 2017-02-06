@@ -2,6 +2,7 @@
 # Generic Variables
 _android="4.4.4"
 _android_version="KitKat"
+_android_java="7"
 _custom_android="cm-11.0"
 _custom_android_version="LineageOS11.0"
 _github_custom_android_place="LineageOS"
@@ -10,13 +11,13 @@ _github_device_place="TeamHackLG"
 while true
 do
 	_unset_and_stop() {
-		unset _device _device_build _device_echo
+		unset _device _device_build _device_echo _option_exit
 		break
 	}
 
 	_if_fail_break() {
 		${1}
-		if ! [ "${?}" == "0" ]
+		if [ "${?}" != "0" ]
 		then
 			echo "  |"
 			echo "  | Something failed!"
@@ -25,18 +26,39 @@ do
 		fi
 	}
 
-	# Unset devices variables for not have any problem
-	unset _device _device_build _device_echo
-
-	# Check if is using 'BASH'
-	if [ ! "${BASH_VERSION}" ]
-	then
+	_java_install() {
 		echo "  |"
-		echo "  | Please do not use 'sh' to run this script"
-		echo "  | Just use 'source build.sh'"
-		echo "  | Exiting from script!"
-		_unset_and_stop
-	fi
+		echo "  | Let's install dependencies!"
+		echo "  | Adding OpenJDK Repository!"
+		sudo apt-add-repository ppa:openjdk-r/ppa -y
+		sudo apt-get update
+	}
+
+	_java_select() {
+		echo "  |"
+		echo "  | Opening Java Selection Screen!"
+		echo "  | Select 'open-jdk-${_android_java}' in both screens"
+		echo "  | to continue using this script"
+		sudo update-alternatives --config java
+		sudo update-alternatives --config javac
+	}
+
+	_check_java() {
+		_java=$(java -version 2>&1 | head -1)
+		_javac=$(javac -version 2>&1 | head -1)
+		if [ "$(echo ${_java} | grep -o 1.${_android_java})" != "1.${_android_java}" ]
+			[ "$(echo ${_javac} | grep -o 1.${_android_java})" != "1.${_android_java}" ]
+		then
+			echo "  |"
+			echo "  | OpenJDK ${_android_java} not is default Java!"
+			echo "  | Default Java is ('${_java}')!"
+			echo "  | And default JavaC is ('${_javac}')!"
+			${1}
+		fi
+	}
+
+	# Unset devices variables for not have any problem
+	unset _device _device_build _device_echo _option_exit
 
 	# Check if 'curl' is installed
 	if [ ! "$(which curl)" ]
@@ -83,7 +105,7 @@ do
 	# Check option of user and transform to script
 	for _u2t in "${@}"
 	do
-		if [[ "${_u2t}" == "-h" || "${_u2t}" == "--help" ]]
+		if [ "${_u2t}" == "-h" ] || [ "${_u2t}" == "--help" ]
 		then
 			echo "  |"
 			echo "  | Usage:"
@@ -96,54 +118,71 @@ do
 			echo "  | -l1ii | --v1    | To build only for L1II/v1"
 			echo "  | -l3ii | --vee3  | To build only for L3II/vee3"
 			echo "  | -gen2 | --gen2  | To build for L1II and L3II"
-			_option_exit="enable"
+			_option_exit="1"
 			_unset_and_stop
 		fi
 		# Choose device before menu
-		if [[ "${_u2t}" == "-l5" || "${_u2t}" == "--e610" ]]
+		if [ "${_u2t}" == "-l5" ] || [ "${_u2t}" == "--e610" ]
 		then
-			_device="gen1"
-			_device_build="e610"
-			_device_echo="L5"
+			_device="gen1" _device_build="e610" _device_echo="L5"
 		fi
-		if [[ "${_u2t}" == "-l7" || "${_u2t}" == "--p700" ]]
+		if [ "${_u2t}" == "-l7" ] || [ "${_u2t}" == "--p700" ]
 		then
-			_device="gen1"
-			_device_build="p700"
-			_device_echo="L7"
+			_device="gen1" _device_build="p700" _device_echo="L7"
 		fi
-		if [[ "${_u2t}" == "-gen1" || "${_u2t}" == "--gen1" ]]
+		if [ "${_u2t}" == "-gen1" ] || [ "${_u2t}" == "--gen1" ]
 		then
-			_device="gen1"
-			_device_build="gen1"
-			_device_echo="All Gen1"
+			_device="gen1" _device_build="gen1" _device_echo="All Gen1"
 		fi
-		if [[ "${_u2t}" == "-l1ii" || "${_u2t}" == "--v1" ]]
+		if [ "${_u2t}" == "-l1ii" ] || [ "${_u2t}" == "--v1" ]
 		then
-			_device="gen2"
-			_device_build="v1"
-			_device_echo="L1II"
+			_device="gen2" _device_build="v1" _device_echo="L1II"
 		fi
-		if [[ "${_u2t}" == "-l3ii" || "${_u2t}" == "--vee3" ]]
+		if [ "${_u2t}" == "-l3ii" ] || [ "${_u2t}" == "--vee3" ]
 		then
-			_device="gen2"
-			_device_build="vee3"
-			_device_echo="L3II"
+			_device="gen2" _device_build="vee3" _device_echo="L3II"
 		fi
-		if [[ "${_u2t}" == "-gen2" || "${_u2t}" == "--gen2" ]]
+		if [ "${_u2t}" == "-gen2" ] || [ "${_u2t}" == "--gen2" ]
 		then
-			_device="gen2"
-			_device_build="gen2"
-			_device_echo="All Gen2"
+			_device="gen2" _device_build="gen2" _device_echo="All Gen2"
 		fi
 	done
 
 	# Exit if option is 'help'
-	if [ "${_option_exit}" == "enable" ]
+	if [ "${_option_exit}" != "" ]
 	then
-		unset _option_exit
 		_unset_and_stop
 	fi
+
+	# Install dependencies for building Android
+	# Pulled from:
+	# <http://developer.sonymobile.com/open-devices/aosp-build-instructions/how-to-build-aosp-nougat-for-unlocked-xperia-devices/>
+	# <https://source.android.com/source/initializing.html>
+	# <https://github.com/akhilnarang/scripts>
+	# <https://github.com/a7r3/ScriBt>
+	_check_java _java_install
+
+	echo "  |"
+	echo "  | Downloading dependencies!"
+	sudo apt-get -y install git-core python gnupg flex bison gperf \
+		libsdl1.2-dev libesd0-dev libwxgtk2.8-dev squashfs-tools \
+		build-essential zip curl libncurses5-dev zlib1g-dev \
+		openjdk-${_android_java}-jre openjdk-${_android_java}-jdk \
+		pngcrush schedtool libxml2 libxml2-utils xsltproc lzop \
+		libc6-dev schedtool g++-multilib lib32z1-dev lib32ncurses5-dev \
+		gcc-multilib liblz4-* pngquant ncurses-dev texinfo gcc gperf \
+		patch libtool automake g++ gawk subversion expat libexpat1-dev \
+		python-all-dev binutils-static bc libcloog-isl-dev libcap-dev \
+		autoconf libgmp-dev build-essential gcc-multilib g++-multilib \
+		pkg-config libmpc-dev libmpfr-dev lzma* liblzma* w3m \
+		android-tools-adb maven ncftp figlet
+	sudo apt-get -f -y install
+
+	# Check Java
+	_check_java _java_select
+
+	# Final check of Java
+	_check_java _unset_and_stop
 
 	# Repo Sync
 	echo "  |"
@@ -186,13 +225,7 @@ do
 	# Use optimized reposync
 	echo "  |"
 	echo "  | Starting Sync:"
-	if [ -f "build/envsetup.sh" ]
-	then
-		_if_fail_break "source build/envsetup.sh"
-		_if_fail_break "reposync -c --force-sync -q"
-	else
-		_if_fail_break "repo sync -c --force-sync -q"
-	fi
+	_if_fail_break "repo sync -c -f --force-sync -q"
 
 	# Initialize environment
 	echo "  |"
@@ -216,7 +249,7 @@ do
 				1) _device_build="e610" _device_echo="L5";;
 				2) _device_build="p700" _device_echo="L7";;
 				3) _device_build="gen1" _device_echo="All Gen1";;
-				*) echo "${x} | Exiting from script!"; _unset_and_stop;;
+				*) echo "${x} | Exiting from script!";;
 			esac
 		fi
 	elif [ "${_device}" == "gen2" ]
@@ -232,7 +265,7 @@ do
 				1) _device_build="v1" _device_echo="L1II";;
 				2) _device_build="vee3" _device_echo="L3II";;
 				3) _device_build="gen2" _device_echo="All Gen2";;
-				*) echo "${x} | Exiting from script!"; _unset_and_stop;;
+				*) echo "${x} | Exiting from script!";;
 			esac
 		fi
 		# Patchs
@@ -240,23 +273,28 @@ do
 		echo "  | Applying the patches"
 		sh device/lge/vee3/patches/apply.sh
 	fi
+	if [ "${_device_build}" == "" ]
+	then
+		_unset_and_stop
+	fi
 	echo "  | Building to ${_device_echo}"
+
 	# Builing Android
 	echo "  |"
 	echo "  | Starting Android Building!"
-	if [[ "${_device_build}" == "e610" || "${_device_build}" == "gen1" ]]
+	if [ "${_device_build}" == "e610" ] || [ "${_device_build}" == "gen1" ]
 	then
 		_if_fail_break "brunch e610"
 	fi
-	if [[ "${_device_build}" == "p700" || "${_device_build}" == "gen1" ]]
+	if [ "${_device_build}" == "p700" ] || [ "${_device_build}" == "gen1" ]
 	then
 		_if_fail_break "brunch p700"
 	fi
-	if [[ "${_device_build}" == "v1" || "${_device_build}" == "gen2" ]]
+	if [ "${_device_build}" == "v1" ] || [ "${_device_build}" == "gen2" ]
 	then
 		_if_fail_break "brunch v1"
 	fi
-	if [[ "${_device_build}" == "vee3" || "${_device_build}" == "gen2" ]]
+	if [ "${_device_build}" == "vee3" ] || [ "${_device_build}" == "gen2" ]
 	then
 		_if_fail_break "brunch vee3"
 	fi
