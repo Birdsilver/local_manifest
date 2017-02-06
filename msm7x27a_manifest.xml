@@ -4,9 +4,9 @@
 	<remote name="thlg" fetch="https://github.com/TeamHackLG/" />
 	<remote name="tv" fetch="https://github.com/TeamVee/" />
 	<!-- Unofficial Builds -->
-	<remove-project name="CyanogenMod/android_packages_apps_CMUpdater" />
+	<remove-project name="LineageOS/android_packages_apps_CMUpdater" />
 	<!-- THLG Display CAF -->
-	<remove-project name="CyanogenMod/android_hardware_qcom_display-caf" />
+	<remove-project name="LineageOS/android_hardware_qcom_display-caf" />
 	<project path="hardware/qcom/display-caf" name="android_hardware_qcom_display-caf" revision="cm-11.0" remote="thlg" />
 	<!-- TWRP -->
 	<project path="bootable/recovery-omni" name="android_bootable_recovery" revision="cm-11.0" remote="tv" />

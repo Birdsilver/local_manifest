@@ -1,4 +1,4 @@
-Manifest for Android KitKat / CyanogenMod 11.0
+Manifest for Android KitKat / LineageOS 11.0
 ====================================
 Project M4|L5 / Project U0|L7 / Project V1|L1II / Project Vee3|L3II
 
@@ -18,9 +18,9 @@ To use:
 
 Manual Way:
 
-To initialize CyanogenMod 11.0 Repo:
+To initialize LineageOS 11.0 Repo:
 
-    repo init -u https://github.com/CyanogenMod/android.git -b cm-11.0 -g all,-notdefault,-darwin
+    repo init -u https://github.com/LineageOS/android.git -b cm-11.0 -g all,-notdefault,-darwin
 
 ---
 
