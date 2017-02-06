@@ -2,6 +2,7 @@
 # Generic Variables
 _android="6.0.1"
 _android_version="MarshMallow"
+_android_java="7"
 _custom_android="cm-13.0"
 _custom_android_version="LineageOS13.0"
 _github_custom_android_place="LineageOS"
@@ -10,13 +11,13 @@ _github_device_place="TeamHackLG"
 while true
 do
 	_unset_and_stop() {
-		unset _device _device_build _device_echo
+		unset _device _device_build _device_echo _option_exit
 		break
 	}
 
 	_if_fail_break() {
 		${1}
-		if ! [ "${?}" == "0" ]
+		if [ "${?}" != "0" ]
 		then
 			echo "  |"
 			echo "  | Something failed!"
@@ -33,38 +34,31 @@ do
 		sudo apt-get update
 	}
 
-	_if_check_java_fail() {
-		_java=$(java -version 2>&1 | head -1 | grep -o 1.8)
-		if [ "${_java}" == "1.8" ]
+	_java_select() {
+		echo "  |"
+		echo "  | Opening Java Selection Screen!"
+		echo "  | Select 'open-jdk-${_android_java}' in both screens"
+		echo "  | to continue using this script"
+		sudo update-alternatives --config java
+		sudo update-alternatives --config javac
+	}
+
+	_check_java() {
+		_java=$(java -version 2>&1 | head -1)
+		_javac=$(javac -version 2>&1 | head -1)
+		if [ "$(echo ${_java} | grep -o 1.${_android_java})" != "1.${_android_java}" ]
+			[ "$(echo ${_javac} | grep -o 1.${_android_java})" != "1.${_android_java}" ]
 		then
-			_javac=$(javac -version 2>&1 | head -1 | grep -o 1.8)
-			if [ ! "${_javac}" == "1.8" ]
-			then
-				echo "  |"
-				echo "  | OpenJDK 8 not is default Java!"
-				echo "  | Default Java is (${_javac})!"
-				${1}
-			fi
-		else
 			echo "  |"
-			echo "  | OpenJDK 8 not is default Java!"
-			echo "  | Default Java is (${_java})!"
+			echo "  | OpenJDK ${_android_java} not is default Java!"
+			echo "  | Default Java is ('${_java}')!"
+			echo "  | And default JavaC is ('${_javac}')!"
 			${1}
 		fi
 	}
 
 	# Unset devices variables for not have any problem
-	unset _device _device_build _device_echo
-
-	# Check if is using 'BASH'
-	if [ ! "${BASH_VERSION}" ]
-	then
-		echo "  |"
-		echo "  | Please do not use 'sh' to run this script"
-		echo "  | Just use 'source build.sh'"
-		echo "  | Exiting from script!"
-		_unset_and_stop
-	fi
+	unset _device _device_build _device_echo _option_exit
 
 	# Check if 'curl' is installed
 	if [ ! "$(which curl)" ]
@@ -111,7 +105,7 @@ do
 	# Check option of user and transform to script
 	for _u2t in "${@}"
 	do
-		if [[ "${_u2t}" == "-h" || "${_u2t}" == "--help" ]]
+		if [ "${_u2t}" == "-h" ] || [ "${_u2t}" == "--help" ]
 		then
 			echo "  |"
 			echo "  | Usage:"
@@ -123,36 +117,35 @@ do
 			echo "  | -l3ii | --vee3  | To build only for L3II/vee3"
 			echo "  |"
 			echo "  | -a    | --all   | To build for all devices"
-			_option_exit="enable"
+			_option_exit="1"
 			_unset_and_stop
 		fi
 		# Choose device before menu
-		if [[ "${_u2t}" == "-l5" || "${_u2t}" == "--e610" ]]
+		if [ "${_u2t}" == "-l5" ] || [ "${_u2t}" == "--e610" ]
 		then
 			_device_build="e610" _device_echo="L5"
 		fi
-		if [[ "${_u2t}" == "-l7" || "${_u2t}" == "--p700" ]]
+		if [ "${_u2t}" == "-l7" ] || [ "${_u2t}" == "--p700" ]
 		then
 			_device_build="p700" _device_echo="L7"
 		fi
-		if [[ "${_u2t}" == "-l1ii" || "${_u2t}" == "--v1" ]]
+		if [ "${_u2t}" == "-l1ii" ] || [ "${_u2t}" == "--v1" ]
 		then
 			_device_build="v1" _device_echo="L1II"
 		fi
-		if [[ "${_u2t}" == "-l3ii" || "${_u2t}" == "--vee3" ]]
+		if [ "${_u2t}" == "-l3ii" ] || [ "${_u2t}" == "--vee3" ]
 		then
 			_device_build="vee3" _device_echo="L3II"
 		fi
-		if [[ "${_u2t}" == "-a" || "${_u2t}" == "--all" ]]
+		if [ "${_u2t}" == "-a" ] || [ "${_u2t}" == "--all" ]
 		then
 			_device_build="all" _device_echo="All Devices"
 		fi
 	done
 
 	# Exit if option is 'help'
-	if [ "${_option_exit}" == "enable" ]
+	if [ "${_option_exit}" != "" ]
 	then
-		unset _option_exit
 		_unset_and_stop
 	fi
 
@@ -161,21 +154,30 @@ do
 	# <http://developer.sonymobile.com/open-devices/aosp-build-instructions/how-to-build-aosp-nougat-for-unlocked-xperia-devices/>
 	# <https://source.android.com/source/initializing.html>
 	# <https://github.com/akhilnarang/scripts>
-	_if_check_java_fail _java_install
+	# <https://github.com/a7r3/ScriBt>
+	_check_java _java_install
 
 	echo "  |"
 	echo "  | Downloading dependencies!"
-	sudo apt-get -y install git-core python gnupg flex bison gperf libsdl1.2-dev libesd0-dev libwxgtk2.8-dev \
-squashfs-tools build-essential zip curl libncurses5-dev zlib1g-dev openjdk-8-jre openjdk-8-jdk pngcrush \
-schedtool libxml2 libxml2-utils xsltproc lzop libc6-dev schedtool g++-multilib lib32z1-dev lib32ncurses5-dev \
-gcc-multilib liblz4-* pngquant ncurses-dev texinfo gcc gperf patch libtool \
-automake g++ gawk subversion expat libexpat1-dev python-all-dev binutils-static bc libcloog-isl-dev \
-libcap-dev autoconf libgmp-dev build-essential gcc-multilib g++-multilib pkg-config libmpc-dev libmpfr-dev lzma* \
-liblzma* w3m android-tools-adb maven ncftp figlet
+	sudo apt-get -y install git-core python gnupg flex bison gperf \
+		libsdl1.2-dev libesd0-dev libwxgtk2.8-dev squashfs-tools \
+		build-essential zip curl libncurses5-dev zlib1g-dev \
+		openjdk-${_android_java}-jre openjdk-${_android_java}-jdk \
+		pngcrush schedtool libxml2 libxml2-utils xsltproc lzop \
+		libc6-dev schedtool g++-multilib lib32z1-dev lib32ncurses5-dev \
+		gcc-multilib liblz4-* pngquant ncurses-dev texinfo gcc gperf \
+		patch libtool automake g++ gawk subversion expat libexpat1-dev \
+		python-all-dev binutils-static bc libcloog-isl-dev libcap-dev \
+		autoconf libgmp-dev build-essential gcc-multilib g++-multilib \
+		pkg-config libmpc-dev libmpfr-dev lzma* liblzma* w3m \
+		android-tools-adb maven ncftp figlet
 	sudo apt-get -f -y install
 
 	# Check Java
-	_if_check_java_fail _unset_and_stop
+	_check_java _java_select
+
+	# Final check of Java
+	_check_java _unset_and_stop
 
 	# Repo Sync
 	echo "  |"
@@ -200,16 +202,7 @@ liblzma* w3m android-tools-adb maven ncftp figlet
 	# Use optimized reposync
 	echo "  |"
 	echo "  | Starting Sync:"
-	if [ -f "build/envsetup.sh" ]
-	then
-		_if_fail_break "source build/envsetup.sh"
-		_if_fail_break "reposync -c --force-sync -q"
-	else
-		_if_fail_break "repo sync -c --force-sync -q"
-	fi
-
-	# Force usage of (FULL WORKING) Java8
-	export EXPERIMENTAL_USE_JAVA8=true
+	_if_fail_break "repo sync -c -f --force-sync -q"
 
 	# Initialize environment
 	echo "  |"
@@ -239,24 +232,28 @@ liblzma* w3m android-tools-adb maven ncftp figlet
 			*) echo "${x} | Exiting from script!"; _unset_and_stop;;
 		esac
 	fi
-	echo "${x} | Building to ${_device_echo}"
+	if [ "${_device_build}" == "" ]
+	then
+		_unset_and_stop
+	fi
+	echo "  | Building to ${_device_echo}"
 
 	# Builing Android
 	echo "  |"
 	echo "  | Starting Android Building!"
-	if [[ "${_device_build}" == "e610" || "${_device_build}" == "all" ]]
+	if [ "${_device_build}" == "e610" ] || [ "${_device_build}" == "all" ]
 	then
 		_if_fail_break "brunch e610"
 	fi
-	if [[ "${_device_build}" == "p700" || "${_device_build}" == "all" ]]
+	if [ "${_device_build}" == "p700" ] || [ "${_device_build}" == "all" ]
 	then
 		_if_fail_break "brunch p700"
 	fi
-	if [[ "${_device_build}" == "v1" || "${_device_build}" == "all" ]]
+	if [ "${_device_build}" == "v1" ] || [ "${_device_build}" == "all" ]
 	then
 		_if_fail_break "brunch v1"
 	fi
-	if [[ "${_device_build}" == "vee3" || "${_device_build}" == "all" ]]
+	if [ "${_device_build}" == "vee3" ] || [ "${_device_build}" == "all" ]
 	then
 		_if_fail_break "brunch vee3"
 	fi
