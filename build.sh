@@ -11,7 +11,7 @@ _github_device_place="TeamHackLG"
 while true
 do
 	_unset_and_stop() {
-		unset _device _device_build _device_echo _option_exit
+		unset _device _device_build _device_echo
 		break
 	}
 
@@ -105,7 +105,7 @@ do
 	# Check option of user and transform to script
 	for _u2t in "${@}"
 	do
-		if [ "${_u2t}" == "-h" ] || [ "${_u2t}" == "--help" ]
+		if [[ "${_u2t}" == *"h" ] || [[ "${_u2t}" == *"help" ]]
 		then
 			echo "  |"
 			echo "  | Usage:"
@@ -121,23 +121,23 @@ do
 			_unset_and_stop
 		fi
 		# Choose device before menu
-		if [ "${_u2t}" == "-l5" ] || [ "${_u2t}" == "--e610" ]
+		if [[ "${_u2t}" == *"l5" ]] || [[ "${_u2t}" == *"e610" ]]
 		then
 			_device_build="e610" _device_echo="L5"
 		fi
-		if [ "${_u2t}" == "-l7" ] || [ "${_u2t}" == "--p700" ]
+		if [[ "${_u2t}" == *"l7" ] || [[ "${_u2t}" == *"p700" ]]
 		then
 			_device_build="p700" _device_echo="L7"
 		fi
-		if [ "${_u2t}" == "-l1ii" ] || [ "${_u2t}" == "--v1" ]
+		if [[ "${_u2t}" == *"l1ii" ] || [[ "${_u2t}" == *"v1" ]]
 		then
 			_device_build="v1" _device_echo="L1II"
 		fi
-		if [ "${_u2t}" == "-l3ii" ] || [ "${_u2t}" == "--vee3" ]
+		if [[ "${_u2t}" == *"l3ii" ] || [[ "${_u2t}" == *"vee3" ]]
 		then
 			_device_build="vee3" _device_echo="L3II"
 		fi
-		if [ "${_u2t}" == "-a" ] || [ "${_u2t}" == "--all" ]
+		if [[ "${_u2t}" == *"a" ]] || [[ "${_u2t}" == *"all" ]]
 		then
 			_device_build="all" _device_echo="All Devices"
 		fi
@@ -155,6 +155,8 @@ do
 	# <https://source.android.com/source/initializing.html>
 	# <https://github.com/akhilnarang/scripts>
 	# <https://github.com/a7r3/ScriBt>
+	# Check Java
+	_check_java _java_select
 	_check_java _java_install
 
 	echo "  |"
@@ -173,10 +175,8 @@ do
 		android-tools-adb maven ncftp figlet
 	sudo apt-get -f -y install
 
-	# Check Java
+	# Select Java
 	_check_java _java_select
-
-	# Final check of Java
 	_check_java _unset_and_stop
 
 	# Repo Sync
