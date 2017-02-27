@@ -105,7 +105,7 @@ do
 	# Check option of user and transform to script
 	for _u2t in "${@}"
 	do
-		if [[ "${_u2t}" == *"h" ] || [[ "${_u2t}" == *"help" ]]
+		if [[ "${_u2t}" == *"h" ]] || [[ "${_u2t}" == *"help" ]]
 		then
 			echo "  |"
 			echo "  | Usage:"
@@ -126,23 +126,23 @@ do
 		then
 			_device="gen1" _device_build="e610" _device_echo="L5"
 		fi
-		if [[ "${_u2t}" == *"l7" ] || [[ "${_u2t}" == *"p700" ]]
+		if [[ "${_u2t}" == *"l7" ]] || [[ "${_u2t}" == *"p700" ]]
 		then
 			_device="gen1" _device_build="p700" _device_echo="L7"
 		fi
-		if [[ "${_u2t}" == *"gen1" ] || [[ "${_u2t}" == *"gen1" ]]
+		if [[ "${_u2t}" == *"gen1" ]] || [[ "${_u2t}" == *"gen1" ]]
 		then
 			_device="gen1" _device_build="gen1" _device_echo="All Gen1"
 		fi
-		if [[ "${_u2t}" == *"l1ii" ] || [[ "${_u2t}" == *"v1" ]]
+		if [[ "${_u2t}" == *"l1ii" ]] || [[ "${_u2t}" == *"v1" ]]
 		then
 			_device="gen2" _device_build="v1" _device_echo="L1II"
 		fi
-		if [[ "${_u2t}" == *"l3ii" ] || [[ "${_u2t}" == *"vee3" ]]
+		if [[ "${_u2t}" == *"l3ii" ]] || [[ "${_u2t}" == *"vee3" ]]
 		then
 			_device="gen2" _device_build="vee3" _device_echo="L3II"
 		fi
-		if [[ "${_u2t}" == *"gen2" ] || [[ "${_u2t}" == *"gen2" ]]
+		if [[ "${_u2t}" == *"gen2" ]] || [[ "${_u2t}" == *"gen2" ]]
 		then
 			_device="gen2" _device_build="gen2" _device_echo="All Gen2"
 		fi
