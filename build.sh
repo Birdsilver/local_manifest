@@ -238,6 +238,9 @@ do
 	fi
 	echo "  | Building to ${_device_echo}"
 
+	# Pack SU since <https://download.lineageos.org/extras> not provide it
+	export WITH_SU=true
+
 	# Builing Android
 	echo "  |"
 	echo "  | Starting Android Building!"
