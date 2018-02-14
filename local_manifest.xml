@@ -4,7 +4,7 @@
 	<remote name="lineage" fetch="https://github.com/LineageOS/" />
 	<remote name="thlg" fetch="https://github.com/TeamHackLG/" />
 	<!-- Useless on Unofficial Builds -->
-	<remove-project name="LineageOS/android_packages_apps_CMUpdater" />
+	<remove-project name="LineageOS/android_packages_apps_Updater" />
 	<!-- Prebuilt apps -->
 	<remove-project name="LineageOS/android_packages_apps_Eleven" /> <!-- Using BlackPlayer -->
 	<remove-project name="LineageOS/android_packages_apps_Camera2" /> <!-- Using OpenCamera -->
